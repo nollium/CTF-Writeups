@@ -26,6 +26,7 @@ graph TD
 A non-privileged account can be created using the registration functionality, allowing access to the site.
 
 ![Account Creation](_image.png)
+*Image: Account creation interface*
 
 ### 2. **IDOR to XXE via order submission**
 
@@ -34,6 +35,7 @@ The `/submitOrder` endpoint is vulnerable to **XML External Entity (XXE)** attac
 By referencing these orders, we bypass the need to create a new order and gain access to the vulnerable XML processing functionality.
 
 ![Order Submission](_image%203.png)
+*Image: Order submission form with XML input*
 
 #### **XXE in XML processing**
 The endpoint processes user-supplied XML data, and the parser is configured with [LIBXML_NOENT](https://www.php.net/manual/en/libxml.constants.php#:~:text=of%20the%20constant-,LIBXML_NOENT,-is%20very%20misleading), which enables [external entity](https://en.wikipedia.org/wiki/XML_external_entity_attack) processing. Here's the vulnerable code:
@@ -169,7 +171,10 @@ $algorithm = 'HS256';
 The file is encoded in base64 using the `php://filter/read=convert.base64-encode/resource=` wrapper to avoid breaking the XML parser with special characters. The first screenshot shows the malicious XML payload being submitted via POST request, while the second demonstrates retrieving the base64-encoded secret through the order details API response:
 
 ![Sending the malicious XML](image-2.png)
+*Image: Sending XXE payload through order submission*
+
 ![Retrieving the JWT Secret](_image%2012.png)
+*Image: API response revealing base64-encoded JWT secret*
 
 
 ### 5. **Forging an Admin JWT**
@@ -228,6 +233,7 @@ When processing `@import` directives, the code checks if registered import paths
 1. **Configure Malicious Import Path**  
    Set a custom import path to `system` through the admin API:  
    ![Import path configuration](_image%2016.png)
+   *Image: Admin panel setting malicious import path*
 
 2. **Trigger Command Execution**  
    Create CSS that imports a system command:  
@@ -242,6 +248,7 @@ When processing `@import` directives, the code checks if registered import paths
 3. **Capture Command Output**  
    The Less processor executes the command during CSS compilation:  
    ![Command execution result](image-3.png)
+   *Image: Command output showing successful RCE*
 
 It is then possible to obtain the flag by executing the `/getflag` binary.
 
@@ -255,6 +262,7 @@ By chaining three critical vulnerabilities:
 
 We achieve full system compromise and retrieve the flag:
 ![Retrieving the flag via the /getflag command](image.png)
+*Image: Flag retrieved through executed command*
 
 `PWNME{f8c24b0632286fe10e506350b4074779}`
 
