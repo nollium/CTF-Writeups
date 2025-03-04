@@ -36,7 +36,7 @@ By referencing these orders, we bypass the need to create a new order and gain a
 ![Order Submission](_image%203.png)
 
 #### **XXE in XML processing**
-The endpoint processes user-supplied XML data, and the parser is configured with `LIBXML_NOENT`, which enables [external entity](https://en.wikipedia.org/wiki/XML_external_entity_attack) processing. Here's the vulnerable code:
+The endpoint processes user-supplied XML data, and the parser is configured with [LIBXML_NOENT](https://www.php.net/manual/en/libxml.constants.php#:~:text=of%20the%20constant-,LIBXML_NOENT,-is%20very%20misleading), which enables [external entity](https://en.wikipedia.org/wiki/XML_external_entity_attack) processing. Here's the vulnerable code:
 
 ```php
 $xmlSanitized = $this->xmlScanner->scan($data["xml"]);
