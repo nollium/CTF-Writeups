@@ -243,6 +243,8 @@ When processing `@import` directives, the code checks if registered import paths
    The Less processor executes the command during CSS compilation:  
    ![Command execution result](image-3.png)
 
+It is then possible to obtain the flag by executing the `/getflag` binary.
+
 
 ## Conclusion
 By chaining three critical vulnerabilities:
@@ -260,3 +262,24 @@ We achieve full system compromise and retrieve the flag:
 - Implement atomic order ownership checks
 - Disable LIBXML_NOENT in XML parsing
 - Sanitize Less processor import callbacks
+
+
+
+#### **Real-world exploitation**
+
+While our solution uses XXE to extract the JWT secret to escalate and reach another vulnerability, in real-world PHP environments this file-read could be directly escalated to **Remote Code Execution** using a novel exploit chain called [CNEXT](https://blog.lexfo.fr/iconv-cve-2024-2961-p1.html) by [Charles Fol](https://www.linkedin.com/in/charles-fol-85996b125/?originalSubdomain=fr). This exploit leverages:
+
+1. A 24-year-old buffer overflow in glibc's `iconv` (CVE-2024-2961)
+2. PHP filter chains with charset conversions
+3. Precise heap manipulation to gain code execution
+
+The challenge authors anticipated this vector and patched it in the Dockerfile by removing CN-EXT charset support:
+
+```Dockerfile:Dockerfile
+RUN cd /usr/lib/x86_64-linux-gnu/gconv/gconv-modules.d \
+    && cat gconv-modules-extra.conf | grep -v -E 'CN-?EXT' > gconv-modules-extra-patched.conf \
+    && mv gconv-modules-extra-patched.conf gconv-modules-extra.conf
+```
+
+This mitigation breaks the exploit's ability to trigger the vulnerable charset conversion, forcing attackers to use the intended JWT/Less RCE path instead of a generic file read→RCE chain.
+
