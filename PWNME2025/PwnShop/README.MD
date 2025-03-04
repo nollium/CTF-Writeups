@@ -194,7 +194,7 @@ $algorithm = 'HS256';
 $adminUser = [
     'id' => 1,
     'username' => 'admin',
-    'permissions' => ['*']
+    'permissions' => [... admin permissions ...]
 ];
 
 // Create the payload matching your JWTManager's structure
@@ -248,7 +248,7 @@ When processing `@import` directives, the code checks if registered import paths
 3. **Capture Command Output**  
    The Less processor executes the command during CSS compilation:  
    ![Command execution result](image-3.png)
-   
+
    *Image 6: Command output showing successful RCE*
 
 It is then possible to obtain the flag by executing the `/getflag` binary.
