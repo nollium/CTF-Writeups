@@ -69,51 +69,61 @@ The XML input is sanitized by a custom [XmlScanner](https://github.com/Phreaks-2
 /* Simplified and commented for writeup clarity purposes */
 class XmlScanner {
     public function scan($xml) {
-        // Check for DOCTYPE in the original XML
+        // Check for DOCTYPE in original encoding
         if (preg_match('/<!DOCTYPE/i', $xml)) {
-            throw new InvalidXmlException();
+            throw new Exception('XXE detected in original encoding');
         }
 
-        // Convert encoding to UTF-8 and check again
-        $xml = $this->convertToUtf8($xml);
+        // Convert to UTF-8 with BOM handling
+        $xml = $this->toUtf8($xml);
+        
+        // Check again in UTF-8 encoding
         if (preg_match('/<!DOCTYPE/i', $xml)) {
-            throw new InvalidXmlException();
-        }
-
-        // Explicitly block UTF-7 encoding
-        if (preg_match('/encoding\s*=\s*(["\'])UTF-7\1/si', $xml)) {
-            throw new InvalidXmlException("UTF-7 encoding is not allowed.");
+            throw new Exception('XXE detected after conversion');
         }
 
         return $xml;
     }
 
-    private function convertToUtf8($xml) {
-        $encoding = $this->detectEncoding($xml);
+    private function toUtf8($xml) {
+        $encoding = $this->findCharSet($xml);
         
+        // Complex encoding conversion with BOM detection
         if ($encoding !== 'UTF-8') {
             $xml = mb_convert_encoding($xml, 'UTF-8', $encoding);
         }
         
-        // Remove UTF-8 BOM if present after conversion
-        if (strncmp($xml, "\xEF\xBB\xBF", 3) === 0) {
-            $xml = substr($xml, 3);
+        // Handle UTF-7 specifically
+        if (preg_match('/encoding\s*=\s*(["\'])UTF-7\1/si', $xml)) {
+            throw new Exception('UTF-7 encoding blocked');
         }
-        
+
         return $xml;
     }
 
-    private function detectEncoding($xml) {
-        // Check for UTF-8 BOM first (hex EFBBBF)
-        if (strncmp($xml, "\xEF\xBB\xBF", 3) === 0) {
-            return 'UTF-8'; // BOM takes precedence over XML declaration
+    private function findCharSet($xml) {
+        // Real BOM detection from implementation
+        $bomEncoding = $this->guessEncodingBom($xml);
+        if ($bomEncoding) {
+            return $bomEncoding;
         }
 
-        // Original detection logic remains
-        if (preg_match('/<\?xml.*encoding=["\']([^"\']+)["\'].*\?>/i', $xml, $matches)) {
+        // Fallback to XML declaration parsing
+        if (preg_match('/<\?xml.*encoding=["\']([^"\']+)["\']/i', $xml, $matches)) {
             return strtoupper($matches[1]);
         }
+        
         return 'UTF-8';
+    }
+
+    private function guessEncodingBom($xml) {
+        // Actual BOM detection logic from implementation
+        if (str_starts_with($xml, self::UTF8_BOM)) return 'UTF-8';
+        if (str_starts_with($xml, self::UTF16BE_BOM)) return 'UTF-16BE';
+        if (str_starts_with($xml, self::UTF16LE_BOM)) return 'UTF-16LE';
+        if (str_starts_with($xml, self::UTF32BE_BOM)) return 'UTF-32BE';
+        if (str_starts_with($xml, self::UTF32LE_BOM)) return 'UTF-32LE';
+        return '';
     }
 }
 
