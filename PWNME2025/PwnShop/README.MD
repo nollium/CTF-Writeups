@@ -25,7 +25,7 @@ graph TD
 ### 1. **Account Creation**
 A non-privileged account can be created using the registration functionality, allowing access to the site.
 
-![Account Creation](PwnShop%201a9531bc97c580dbb3bfc7b0a6e8168d/image.png)
+![Account Creation](_image.png)
 
 ### 2. **IDOR to XXE via order submission**
 
@@ -33,7 +33,7 @@ The `/submitOrder` endpoint is vulnerable to **XML External Entity (XXE)** attac
 
 By referencing these orders, we bypass the need to create a new order and gain access to the vulnerable XML processing functionality.
 
-![Order Submission](PwnShop%201a9531bc97c580dbb3bfc7b0a6e8168d/image%203.png)
+![Order Submission](_image%203.png)
 
 #### **XXE in XML processing**
 The endpoint processes user-supplied XML data, and the parser is configured with `LIBXML_NOENT`, which enables [external entity](https://en.wikipedia.org/wiki/XML_external_entity_attack) processing. Here's the vulnerable code:
@@ -169,7 +169,7 @@ $algorithm = 'HS256';
 The file is encoded in base64 using the `php://filter/read=convert.base64-encode/resource=` wrapper to avoid breaking the XML parser with special characters. The first screenshot shows the malicious XML payload being submitted via POST request, while the second demonstrates retrieving the base64-encoded secret through the order details API response:
 
 ![Sending the malicious XML](image-2.png)
-![Retrieving the JWT Secret](PwnShop%201a9531bc97c580dbb3bfc7b0a6e8168d/image%2012.png)
+![Retrieving the JWT Secret](_image%2012.png)
 
 
 ### 5. **Forging an Admin JWT**
@@ -227,7 +227,7 @@ When processing `@import` directives, the code checks if registered import paths
 **Exploitation Process**:
 1. **Configure Malicious Import Path**  
    Set a custom import path to `system` through the admin API:  
-   ![Import path configuration](PwnShop%201a9531bc97c580dbb3bfc7b0a6e8168d/image%2016.png)
+   ![Import path configuration](_image%2016.png)
 
 2. **Trigger Command Execution**  
    Create CSS that imports a system command:  
