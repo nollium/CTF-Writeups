@@ -190,14 +190,14 @@ use Firebase\JWT\JWT;
 $secretKey = 'ThisIsNotTheSameSecretOnRemote';
 $algorithm = 'HS256';
 
-// User data structure matching what your JWTManager expects
+// User data structure matching what JWTManager expects
 $adminUser = [
     'id' => 1,
     'username' => 'admin',
     'permissions' => [... admin permissions ...]
 ];
 
-// Create the payload matching your JWTManager's structure
+// Create the payload matching JWTManager's structure
 $payload = [
     'user_id' => $adminUser['id'],
     'username' => $adminUser['username'],
